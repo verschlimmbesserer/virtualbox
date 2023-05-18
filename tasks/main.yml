@@ -1,2 +1,41 @@
 ---
-# tasks file for template
+
+- name: "Add Virtualbox Repository"
+  block:
+
+    - name: "Add Repository Key"
+      ansible.builtin.get_url:
+        url: "{{ vb_apt_repokey_url }}"
+        dest: "{{ vb_apt_repokey_keyringfile }}"
+
+    - name: "Add repository into sources list"
+      ansible.builtin.apt_repository:
+        repo: "{{ vb_apt_repo_url }}"
+        state: present
+        filename: virtualbox
+
+- name: Accept virtualbox-ext-pack seen license
+  ansible.builtin.debconf:
+    name: virtualbox-ext-pack
+    question: virtualbox-ext-pack/license
+    value: 'true'
+    vtype: seen
+
+- name: Accept virtualbox-ext-pack select license
+  ansible.builtin.debconf:
+    name: virtualbox-ext-pack
+    question: virtualbox-ext-pack/license
+    value: 'true'
+    vtype: select
+
+- name: "Install Virtualbox package"
+  ansible.builtin.apt:
+    name: "virtualbox-{{ vb_version }}"
+    state: "{{ vb_state }}"
+    update_cache: yes
+
+- name: "Install Virtualbox Extension Pack"
+  ansible.builtin.apt:
+    name: virtualbox-ext-pack
+    state: "{{ vb_state }}"
+
